@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Setup script for pypevol-plus package."""
+"""Setup script for pypevol package."""
 
 from setuptools import setup, find_packages
 import os
@@ -13,7 +13,7 @@ def read_readme():
     return ''
 
 setup(
-    name='pypevol-plus',
+    name='pypevol',
     version='0.1.0',
     author='pypevol Team',
     author_email='pypevol@example.com',

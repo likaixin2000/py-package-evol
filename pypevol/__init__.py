@@ -1,8 +1,8 @@
-"""PyMevol Plus - PyPI Package API Evolution Analyzer."""
+"""PyPevol - PyPI Package API Evolution Analyzer."""
 
 __version__ = '0.1.0'
-__author__ = 'PyMevol Team'
-__email__ = 'pymevol@example.com'
+__author__ = 'PyPevol Team'
+__email__ = 'pypevol@example.com'
 
 from .analyzer import PackageAnalyzer
 from .models import APIElement, VersionInfo, AnalysisResult

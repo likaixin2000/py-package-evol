@@ -1,4 +1,4 @@
-# PyMevol Plus
+# PyPevol
 
 A comprehensive tool for analyzing PyPI package API evolution and lifecycle. This package fetches information from PyPI, analyzes wheels and sources, and provides detailed reports about when APIs were introduced and removed across different versions.
 
@@ -15,7 +15,7 @@ A comprehensive tool for analyzing PyPI package API evolution and lifecycle. Thi
 ## Installation
 
 ```bash
-pip install pypevol-plus
+pip install pypevol
 ```
 
 For development:

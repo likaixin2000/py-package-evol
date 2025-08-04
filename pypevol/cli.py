@@ -1,4 +1,4 @@
-"""Command-line interface for PyMevol Plus."""
+"""Command-line interface for PyPevol."""
 
 import click
 import json
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @click.option('--cache-dir', type=click.Path(), help='Directory to cache downloaded files')
 @click.pass_context
 def main(ctx, verbose, cache_dir):
-    """PyMevol Plus - Analyze PyPI package API evolution."""
+    """PyPevol - Analyze PyPI package API evolution."""
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
     

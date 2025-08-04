@@ -1,10 +1,10 @@
-# Makefile for PyPevol Plus
+# Makefile for PyPevol
 
 .PHONY: help install install-dev test lint format clean build upload docs
 
 help:  ## Show this help message
-	@echo "PyPevol Plus - Makefile Help"
-	@echo "============================"
+	@echo "PyPevol - Makefile Help"
+	@echo "======================="
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\\033[36m%-20s\\033[0m %s\\n", $$1, $$2}'
 
 install:  ## Install the package
