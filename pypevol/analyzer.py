@@ -38,12 +38,44 @@ class PackageAnalyzer:
         self.include_yanked = include_yanked
         self.temp_dirs = []  # Track temp directories for cleanup
 
+    def get_package_versions(self, 
+                            package_name: str,
+                            include_yanked: bool = False) -> List[VersionInfo]:
+        """Get all available version information for a package.
+        
+        Args:
+            package_name: Name of the package
+            include_yanked: Whether to include yanked versions
+            
+        Returns:
+            List of VersionInfo objects for all available versions
+        """
+        logger.info(f"Fetching version information for package: {package_name}")
+        
+        try:
+            version_infos = self.fetcher.get_version_range(
+                package_name, 
+                from_version=None, 
+                to_version=None, 
+                max_versions=None, 
+                include_yanked=include_yanked
+            )
+            
+            logger.info(f"Found {len(version_infos)} versions for {package_name}")
+            return version_infos
+            
+        except Exception as e:
+            logger.error(f"Failed to fetch version information for {package_name}: {e}")
+            raise
+
     def analyze_package(self, 
                        package_name: str,
                        from_version: Optional[str] = None,
                        to_version: Optional[str] = None,
                        max_versions: Optional[int] = None,
-                       versions: Optional[List[str]] = None) -> AnalysisResult:
+                       versions: Optional[List[str]] = None,
+                       from_date: Optional[datetime] = None,
+                       to_date: Optional[datetime] = None) -> AnalysisResult:
         """Analyze the API evolution of a package.
         
         Args:
@@ -52,6 +84,8 @@ class PackageAnalyzer:
             to_version: Ending version (inclusive). Mutually exclusive with versions.
             max_versions: Maximum number of versions to analyze. Mutually exclusive with versions.
             versions: Specific list of version names to analyze. Mutually exclusive with from_version/to_version/max_versions.
+            from_date: Starting date (inclusive). Filters versions released on or after this date.
+            to_date: Ending date (inclusive). Filters versions released on or before this date.
             
         Returns:
             AnalysisResult containing the evolution data
@@ -75,6 +109,10 @@ class PackageAnalyzer:
                 version_infos = self.fetcher.get_version_range(
                     package_name, from_version, to_version, max_versions, include_yanked=self.include_yanked
                 )
+            
+            # Apply date filtering
+            if from_date is not None or to_date is not None:
+                version_infos = self._filter_versions_by_date(version_infos, from_date, to_date)
             
             if not version_infos:
                 logger.error(f"No versions found for package {package_name}")
@@ -145,6 +183,42 @@ class PackageAnalyzer:
         
         finally:
             self._cleanup()
+
+    def _filter_versions_by_date(self, 
+                                version_infos: List[VersionInfo], 
+                                from_date: Optional[datetime], 
+                                to_date: Optional[datetime]) -> List[VersionInfo]:
+        """Filter version information by release date.
+        
+        Args:
+            version_infos: List of version information to filter
+            from_date: Starting date (inclusive). None means no lower bound.
+            to_date: Ending date (inclusive). None means no upper bound.
+            
+        Returns:
+            Filtered list of version information
+        """
+        if from_date is None and to_date is None:
+            return version_infos
+        
+        filtered_versions = []
+        
+        for version_info in version_infos:
+            # Skip versions without release date if date filtering is requested
+            if version_info.release_date is None:
+                logger.warning(f"Version {version_info.version} has no release date, skipping in date filter")
+                continue
+            
+            # Check date bounds
+            if from_date is not None and version_info.release_date < from_date:
+                continue
+            if to_date is not None and version_info.release_date > to_date:
+                continue
+            
+            filtered_versions.append(version_info)
+        
+        logger.info(f"Date filtering reduced versions from {len(version_infos)} to {len(filtered_versions)}")
+        return filtered_versions
 
     def _analyze_version(self, package_name: str, version_info: VersionInfo) -> Optional[List[APIElement]]:
         """Analyze a specific version of a package.
