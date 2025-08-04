@@ -43,10 +43,11 @@ def main(ctx, verbose, cache_dir):
               default='json', help='Output format')
 @click.option('--include-private', is_flag=True, help='Include private APIs (starting with _)')
 @click.option('--include-deprecated', is_flag=True, default=True, help='Include deprecated APIs')
+@click.option('--include-yanked', is_flag=True, help='Include yanked versions in analysis')
 @click.option('--prefer-source', is_flag=True, help='Prefer source distributions over wheels')
 @click.pass_context
 def analyze(ctx, packages, from_version, to_version, max_versions, versions, output, 
-           output_format, include_private, include_deprecated, prefer_source):
+           output_format, include_private, include_deprecated, include_yanked, prefer_source):
     """Analyze one or more packages for API evolution."""
     
     cache_dir = ctx.obj.get('cache_dir')
@@ -69,7 +70,8 @@ def analyze(ctx, packages, from_version, to_version, max_versions, versions, out
         cache_dir=cache_dir,
         include_private=include_private,
         include_deprecated=include_deprecated,
-        prefer_wheels=not prefer_source
+        prefer_wheels=not prefer_source,
+        include_yanked=include_yanked
     )
     
     results = {}

@@ -21,7 +21,8 @@ class PackageAnalyzer:
                  cache_dir: Optional[Path] = None,
                  include_private: bool = False,
                  include_deprecated: bool = True,
-                 prefer_wheels: bool = True):
+                 prefer_wheels: bool = True,
+                 include_yanked: bool = False):
         """Initialize the package analyzer.
         
         Args:
@@ -29,10 +30,12 @@ class PackageAnalyzer:
             include_private: Whether to include private APIs
             include_deprecated: Whether to include deprecated APIs
             prefer_wheels: Whether to prefer wheel files over source distributions
+            include_yanked: Whether to include yanked versions in analysis
         """
         self.fetcher = PyPIFetcher(cache_dir)
         self.parser = SourceParser(include_private, include_deprecated)
         self.prefer_wheels = prefer_wheels
+        self.include_yanked = include_yanked
         self.temp_dirs = []  # Track temp directories for cleanup
 
     def analyze_package(self, 
@@ -66,11 +69,11 @@ class PackageAnalyzer:
             # Get version information
             if versions is not None:
                 # Use specific versions
-                version_infos = self.fetcher.get_specific_versions(package_name, versions)
+                version_infos = self.fetcher.get_specific_versions(package_name, versions, include_yanked=self.include_yanked)
             else:
                 # Use version range or all versions
                 version_infos = self.fetcher.get_version_range(
-                    package_name, from_version, to_version, max_versions
+                    package_name, from_version, to_version, max_versions, include_yanked=self.include_yanked
                 )
             
             if not version_infos:
@@ -131,6 +134,7 @@ class PackageAnalyzer:
                         'include_private': self.parser.include_private,
                         'include_deprecated': self.parser.include_deprecated,
                         'prefer_wheels': self.prefer_wheels,
+                        'include_yanked': self.include_yanked,
                     }
                 }
             )

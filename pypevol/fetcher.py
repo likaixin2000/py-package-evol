@@ -39,6 +39,24 @@ class PyPIFetcher:
         else:
             self.cache_dir = None
 
+    def _is_version_yanked(self, version_data: List[Dict]) -> bool:
+        """Check if a version is yanked by examining its files.
+        
+        Args:
+            version_data: List of file information for a version
+            
+        Returns:
+            True if any file in the version is yanked
+        """
+        if not version_data:
+            return False
+        
+        for file_info in version_data:
+            if file_info.get('yanked', False):
+                return True
+        
+        return False
+
     def get_package_metadata(self, package_name: str) -> Dict[str, Any]:
         """Get package metadata from PyPI.
         
@@ -62,15 +80,16 @@ class PyPIFetcher:
             logger.error(f"Failed to fetch metadata for {package_name}: {e}")
             raise
 
-    def get_version_info(self, package_name: str, version: str) -> Optional[VersionInfo]:
+    def get_version_info(self, package_name: str, version: str, include_yanked: bool = False) -> Optional[VersionInfo]:
         """Get information about a specific package version.
         
         Args:
             package_name: Name of the package
             version: Version string
+            include_yanked: Whether to include yanked versions
             
         Returns:
-            VersionInfo object or None if version not found
+            VersionInfo object or None if version not found or is yanked (when include_yanked=False)
         """
         try:
             metadata = self.get_package_metadata(package_name)
@@ -82,6 +101,22 @@ class PyPIFetcher:
             
             version_data = releases[version]
             if not version_data:
+                return None
+            
+            # Determine if version is yanked and get yanked reason
+            is_yanked = self._is_version_yanked(version_data)
+            yanked_reason = None
+            if is_yanked:
+                # Find the yanked reason from any of the files
+                for file_info in version_data:
+                    if file_info.get('yanked', False):
+                        yanked_reason = file_info.get('yanked_reason')
+                        if yanked_reason:
+                            break
+            
+            # Filter out yanked versions if not requested
+            if not include_yanked and is_yanked:
+                logger.info(f"Skipping yanked version {version} for package {package_name}")
                 return None
             
             # Parse release date from the first file
@@ -126,6 +161,8 @@ class PyPIFetcher:
                 dependencies=package_info.get('requires_dist', []) or [],
                 wheel_url=wheel_url,
                 source_url=source_url,
+                yanked=is_yanked,
+                yanked_reason=yanked_reason,
                 metadata={
                     'summary': package_info.get('summary'),
                     'description': package_info.get('description'),
@@ -140,11 +177,12 @@ class PyPIFetcher:
             logger.error(f"Failed to get version info for {package_name} {version}: {e}")
             return None
 
-    def get_all_versions(self, package_name: str) -> List[VersionInfo]:
+    def get_all_versions(self, package_name: str, include_yanked: bool = False) -> List[VersionInfo]:
         """Get information about all versions of a package.
         
         Args:
             package_name: Name of the package
+            include_yanked: Whether to include yanked versions
             
         Returns:
             List of VersionInfo objects sorted by release date
@@ -155,7 +193,7 @@ class PyPIFetcher:
             
             versions = []
             for version in releases.keys():
-                version_info = self.get_version_info(package_name, version)
+                version_info = self.get_version_info(package_name, version, include_yanked=include_yanked)
                 if version_info:
                     versions.append(version_info)
             
@@ -301,11 +339,12 @@ class PyPIFetcher:
             logger.error(f"Failed to download and extract {package_name} {version}: {e}")
             return None
 
-    def get_package_versions(self, package_name: str) -> List[str]:
+    def get_package_versions(self, package_name: str, include_yanked: bool = False) -> List[str]:
         """Get a list of all version names for a package without parsing VersionInfo.
         
         Args:
             package_name: Name of the package
+            include_yanked: Whether to include yanked versions
             
         Returns:
             List of version strings sorted chronologically (oldest first)
@@ -314,10 +353,14 @@ class PyPIFetcher:
             metadata = self.get_package_metadata(package_name)
             releases = metadata.get('releases', {})
             
-            # Filter out versions without release data
+            # Filter out versions without release data and optionally yanked versions
             valid_versions = []
             for version, version_data in releases.items():
                 if version_data:  # Only include versions with actual release data
+                    # Check if version is yanked
+                    if not include_yanked and self._is_version_yanked(version_data):
+                        logger.debug(f"Skipping yanked version {version} for package {package_name}")
+                        continue
                     valid_versions.append(version)
             
             # Sort versions chronologically by trying to parse release dates
@@ -346,19 +389,20 @@ class PyPIFetcher:
             logger.error(f"Failed to get version list for {package_name}: {e}")
             return []
 
-    def get_specific_versions(self, package_name: str, versions: List[str]) -> List[VersionInfo]:
+    def get_specific_versions(self, package_name: str, versions: List[str], include_yanked: bool = False) -> List[VersionInfo]:
         """Get VersionInfo objects for specific version names.
         
         Args:
             package_name: Name of the package
             versions: List of version strings to get info for
+            include_yanked: Whether to include yanked versions
             
         Returns:
             List of VersionInfo objects for the specified versions
         """
         version_infos = []
         for version in versions:
-            version_info = self.get_version_info(package_name, version)
+            version_info = self.get_version_info(package_name, version, include_yanked=include_yanked)
             if version_info:
                 version_infos.append(version_info)
             else:
@@ -377,7 +421,8 @@ class PyPIFetcher:
     def get_version_range(self, package_name: str, 
                          from_version: Optional[str] = None,
                          to_version: Optional[str] = None,
-                         max_versions: Optional[int] = None) -> List[VersionInfo]:
+                         max_versions: Optional[int] = None,
+                         include_yanked: bool = False) -> List[VersionInfo]:
         """Get a range of versions for analysis.
         
         Args:
@@ -385,11 +430,12 @@ class PyPIFetcher:
             from_version: Starting version (inclusive)
             to_version: Ending version (inclusive)
             max_versions: Maximum number of versions to return
+            include_yanked: Whether to include yanked versions
             
         Returns:
             List of VersionInfo objects in the specified range
         """
-        all_versions = self.get_all_versions(package_name)
+        all_versions = self.get_all_versions(package_name, include_yanked=include_yanked)
         
         if not all_versions:
             return []

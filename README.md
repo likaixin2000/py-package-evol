@@ -42,6 +42,9 @@ pypevol analyze requests flask django --output results/
 
 # Analyze specific versions
 pypevol analyze requests --versions="2.32.0,2.32.1,2.32.2"
+
+# Include yanked versions in analysis
+pypevol analyze requests --include-yanked --max-versions=10
 ```
 
 ### Python API Usage
@@ -52,10 +55,10 @@ from pypevol import PackageAnalyzer, PyPIFetcher
 # Create analyzer
 analyzer = PackageAnalyzer()
 
-# Option 1: Analyze all versions (limited)
+# Option 1: Analyze all versions (limited, excludes yanked by default)
 result = analyzer.analyze_package('requests', max_versions=10)
 
-# Option 2: Analyze version range
+# Option 2: Analyze version range (excludes yanked by default)
 result = analyzer.analyze_package('requests', 
                                  from_version='2.30.0', 
                                  to_version='2.32.0')
@@ -63,6 +66,10 @@ result = analyzer.analyze_package('requests',
 # Option 3: Analyze specific versions (NEW!)
 result = analyzer.analyze_package('requests', 
                                  versions=['2.32.0', '2.32.1', '2.32.2'])
+
+# Option 4: Include yanked versions (NEW!)
+analyzer_with_yanked = PackageAnalyzer(include_yanked=True)
+result = analyzer_with_yanked.analyze_package('requests', max_versions=10)
 
 # Get available versions first
 fetcher = PyPIFetcher()

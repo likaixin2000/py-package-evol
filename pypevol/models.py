@@ -103,6 +103,8 @@ class VersionInfo:
     dependencies: List[str] = field(default_factory=list)
     wheel_url: Optional[str] = None
     source_url: Optional[str] = None
+    yanked: bool = False
+    yanked_reason: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
     
     def __post_init__(self):
@@ -149,6 +151,8 @@ class VersionInfo:
             'dependencies': self.dependencies,
             'wheel_url': self.wheel_url,
             'source_url': self.source_url,
+            'yanked': self.yanked,
+            'yanked_reason': self.yanked_reason,
             'metadata': self.metadata,
         }
 
@@ -365,6 +369,8 @@ class AnalysisResult:
                 dependencies=version_data.get('dependencies', []),
                 wheel_url=version_data.get('wheel_url'),
                 source_url=version_data.get('source_url'),
+                yanked=version_data.get('yanked', False),
+                yanked_reason=version_data.get('yanked_reason'),
                 metadata=version_data.get('metadata', {})
             ))
         
