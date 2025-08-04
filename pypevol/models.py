@@ -223,37 +223,130 @@ class AnalysisResult:
         """Get all API elements for a specific version."""
         return self.api_elements.get(version, [])
 
+    def _find_exact_matches(self, api_name: str) -> List[APIChange]:
+        """Find exact matches for the given API name."""
+        exact_matches = []
+        for change in self.changes:
+            if change.element.name == api_name or change.element.full_name == api_name:
+                exact_matches.append(change)
+        return exact_matches
+
+    def _calculate_element_similarity(self, api_name: str, element: APIElement) -> float:
+        """Calculate similarity score between api_name and an API element."""
+        from difflib import SequenceMatcher
+        
+        scores = []
+        
+        # 1. Direct name similarity
+        name_score = SequenceMatcher(None, api_name.lower(), element.name.lower()).ratio()
+        scores.append(name_score)
+        
+        # 2. Full name ending similarity (e.g., "connect_to_my_server" matches "mylib.remote.connections.connect_to_my_server")
+        if '.' in element.full_name:
+            full_name_parts = element.full_name.split('.')
+            if len(full_name_parts) > 1:
+                ending_match_score = SequenceMatcher(None, api_name.lower(), full_name_parts[-1].lower()).ratio()
+                scores.append(ending_match_score * 1.2)  # Boost ending matches
+        
+        # 3. Check if api_name is contained in the element name (substring match)
+        if api_name.lower() in element.name.lower() or element.name.lower() in api_name.lower():
+            substring_score = max(len(api_name), len(element.name)) / (len(api_name) + len(element.name))
+            scores.append(substring_score * 1.1)  # Boost substring matches
+        
+        # Take the highest score for this element
+        max_score = max(scores) if scores else 0.0
+        
+        # Prefer exact name matches over full name matches to avoid false positives
+        if element.name.lower() == api_name.lower():
+            max_score = 1.0
+            
+        return max_score
+
+    def _find_fuzzy_match(self, api_name: str) -> Optional[APIElement]:
+        """Find the best fuzzy match for the given API name."""
+        # Collect all unique API elements for fuzzy matching
+        all_elements = set()
+        for change in self.changes:
+            all_elements.add(change.element)
+        for elements in self.api_elements.values():
+            all_elements.update(elements)
+        
+        # Find best fuzzy match
+        best_match = None
+        best_score = 0.0
+        similarity_threshold = 0.6  # Minimum similarity threshold
+        
+        for element in all_elements:
+            score = self._calculate_element_similarity(api_name, element)
+            if score > best_score and score >= similarity_threshold:
+                best_score = score
+                best_match = element
+        
+        return best_match
+
+    def _process_lifecycle_changes(self, changes: List[APIChange], lifecycle: Dict[str, Any]) -> None:
+        """Process changes and update lifecycle information."""
+        for change in changes:
+            if change.change_type == ChangeType.ADDED:
+                lifecycle['introduced_in'] = change.to_version
+            elif change.change_type == ChangeType.REMOVED:
+                lifecycle['removed_in'] = change.to_version
+            elif change.change_type == ChangeType.MODIFIED:
+                lifecycle['modifications'].append({
+                    'version': change.to_version,
+                    'old_signature': change.old_signature,
+                    'new_signature': change.new_signature,
+                    'description': change.description
+                })
+
+    def _find_versions_present(self, api_name: str, matched_api: Optional[str]) -> List[str]:
+        """Find all versions where the API is present."""
+        versions_present = []
+        for version, elements in self.api_elements.items():
+            for element in elements:
+                # Check both exact matches and fuzzy matches
+                is_match = (element.name == api_name or element.full_name == api_name or
+                           (matched_api and element.full_name == matched_api))
+                
+                if is_match:
+                    versions_present.append(version)
+                    break
+        return versions_present
+
     def get_api_lifecycle(self, api_name: str) -> Dict[str, Any]:
-        """Get the lifecycle information for a specific API."""
+        """Get the lifecycle information for a specific API with fuzzy matching support."""
         lifecycle = {
             'name': api_name,
             'introduced_in': None,
             'removed_in': None,
             'modifications': [],
-            'versions_present': []
+            'versions_present': [],
+            'matched_api': None  # Store the actual matched API name if fuzzy match was used
         }
         
-        # Find introduction and removal
-        for change in self.changes:
-            if change.element.name == api_name or change.element.full_name == api_name:
-                if change.change_type == ChangeType.ADDED:
-                    lifecycle['introduced_in'] = change.to_version
-                elif change.change_type == ChangeType.REMOVED:
-                    lifecycle['removed_in'] = change.to_version
-                elif change.change_type == ChangeType.MODIFIED:
-                    lifecycle['modifications'].append({
-                        'version': change.to_version,
-                        'old_signature': change.old_signature,
-                        'new_signature': change.new_signature,
-                        'description': change.description
-                    })
+        # First, try exact matches
+        exact_matches = self._find_exact_matches(api_name)
+        
+        if exact_matches:
+            matched_changes = exact_matches
+        else:
+            # Try fuzzy matching
+            best_match = self._find_fuzzy_match(api_name)
+            
+            if best_match:
+                lifecycle['matched_api'] = best_match.full_name
+                # Use the best match for finding changes
+                matched_changes = [c for c in self.changes if 
+                                 c.element.name == best_match.name and 
+                                 c.element.full_name == best_match.full_name]
+            else:
+                matched_changes = []
+        
+        # Process the matched changes
+        self._process_lifecycle_changes(matched_changes, lifecycle)
         
         # Find all versions where API is present
-        for version, elements in self.api_elements.items():
-            for element in elements:
-                if element.name == api_name or element.full_name == api_name:
-                    lifecycle['versions_present'].append(version)
-                    break
+        lifecycle['versions_present'] = self._find_versions_present(api_name, lifecycle['matched_api'])
         
         return lifecycle
 
@@ -274,7 +367,7 @@ class AnalysisResult:
             ])
         summary['change_types'] = change_counts
         
-        # Count API elements by type  
+        # Count API elements by type
         api_counts = {}
         all_elements = []
         for elements in self.api_elements.values():
