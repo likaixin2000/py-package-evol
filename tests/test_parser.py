@@ -5,8 +5,8 @@ import tempfile
 import textwrap
 from pathlib import Path
 
-from pymevol.parser import SourceParser
-from pymevol.models import APIType
+from pypevol.parser import SourceParser
+from pypevol.models import APIType
 
 
 class TestSourceParser(unittest.TestCase):
@@ -117,7 +117,7 @@ class TestSourceParser(unittest.TestCase):
         self.assertEqual(len(constants), 4)
         
         version_const = next(e for e in constants if e.name == "VERSION")
-        self.assertEqual(version_const.metadata.get('value'), '"1.0.0"')
+        self.assertEqual(version_const.metadata.get('value'), "'1.0.0'")
         
         api_url_const = next(e for e in constants if e.name == "API_URL")
         self.assertEqual(api_url_const.type_hints.get('type'), 'str')

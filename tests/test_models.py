@@ -2,7 +2,7 @@
 
 import unittest
 from datetime import datetime
-from pymevol.models import APIElement, APIType, VersionInfo, AnalysisResult, APIChange, ChangeType
+from pypevol.models import APIElement, APIType, VersionInfo, AnalysisResult, APIChange, ChangeType
 
 
 class TestAPIElement(unittest.TestCase):
@@ -162,9 +162,9 @@ class TestAnalysisResult(unittest.TestCase):
         self.assertEqual(summary['package_name'], "test-package")
         self.assertEqual(summary['total_versions'], 2)
         self.assertEqual(summary['total_changes'], 2)
-        self.assertEqual(summary['changes_by_type']['added'], 2)
+        self.assertEqual(summary['change_types']['added'], 2)
         # func1 appears in 2 versions + func2 appears in 1 version = 3 total API occurrences
-        self.assertEqual(summary['apis_by_type']['function'], 3)
+        self.assertEqual(summary['api_types']['function'], 3)
     
     def test_to_dict(self):
         """Test converting analysis result to dictionary."""
