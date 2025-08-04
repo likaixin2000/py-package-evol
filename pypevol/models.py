@@ -223,13 +223,73 @@ class AnalysisResult:
         """Get all API elements for a specific version."""
         return self.api_elements.get(version, [])
 
+    def _check_name_collisions(self, api_name: str, matches: Optional[List[APIChange]] = None) -> Dict[str, Any]:
+        """Check for name collisions and return collision information.
+        
+        This method checks for collisions in both API changes (if matches provided) 
+        and all API elements across versions.
+        """
+        unique_full_names = set()
+        api_details = []
+        
+        # Check matches from API changes if provided
+        if matches:
+            for match in matches:
+                full_name = match.element.full_name
+                if full_name not in unique_full_names:
+                    unique_full_names.add(full_name)
+                    api_details.append({
+                        'full_name': full_name,
+                        'module_path': match.element.module_path,
+                        'type': match.element.type.value,
+                        'signature': match.element.signature
+                    })
+        
+        # Also check all API elements across versions to catch any we might have missed
+        unique_elements = {}  # Use dict with full_name as key to avoid hashability issues
+        for elements in self.api_elements.values():
+            for element in elements:
+                if element.name == api_name:
+                    unique_elements[element.full_name] = element
+        
+        # Add any API elements not already found in changes
+        for element in unique_elements.values():
+            full_name = element.full_name
+            if full_name not in unique_full_names:
+                unique_full_names.add(full_name)
+                api_details.append({
+                    'full_name': full_name,
+                    'module_path': element.module_path,
+                    'type': element.type.value,
+                    'signature': element.signature
+                })
+        
+        has_collision = len(unique_full_names) > 1
+        
+        return {
+            'has_collision': has_collision,
+            'unique_apis': api_details,
+            'collision_count': len(unique_full_names)
+        }
+
     def _find_exact_matches(self, api_name: str) -> List[APIChange]:
         """Find exact matches for the given API name."""
         exact_matches = []
+        name_only_matches = []
+        
         for change in self.changes:
-            if change.element.name == api_name or change.element.full_name == api_name:
+            if change.element.full_name == api_name:
+                # Exact full name match - highest priority
                 exact_matches.append(change)
-        return exact_matches
+            elif change.element.name == api_name:
+                # Name-only match - need to check for collisions
+                name_only_matches.append(change)
+        
+        # If we have full name matches, return those (no ambiguity)
+        if exact_matches:
+            return exact_matches
+            
+        return name_only_matches
 
     def _calculate_element_similarity(self, api_name: str, element: APIElement) -> float:
         """Calculate similarity score between api_name and an API element."""
@@ -264,19 +324,24 @@ class AnalysisResult:
 
     def _find_fuzzy_match(self, api_name: str) -> Optional[APIElement]:
         """Find the best fuzzy match for the given API name."""
-        # Collect all unique API elements for fuzzy matching
-        all_elements = set()
+        # Collect all unique API elements for fuzzy matching using dict to avoid hashability issues
+        unique_elements = {}
+        
+        # Add elements from changes
         for change in self.changes:
-            all_elements.add(change.element)
+            unique_elements[change.element.full_name] = change.element
+            
+        # Add elements from all versions
         for elements in self.api_elements.values():
-            all_elements.update(elements)
+            for element in elements:
+                unique_elements[element.full_name] = element
         
         # Find best fuzzy match
         best_match = None
         best_score = 0.0
         similarity_threshold = 0.6  # Minimum similarity threshold
         
-        for element in all_elements:
+        for element in unique_elements.values():
             score = self._calculate_element_similarity(api_name, element)
             if score > best_score and score >= similarity_threshold:
                 best_score = score
@@ -305,27 +370,82 @@ class AnalysisResult:
         for version, elements in self.api_elements.items():
             for element in elements:
                 # Check both exact matches and fuzzy matches
-                is_match = (element.name == api_name or element.full_name == api_name or
-                           (matched_api and element.full_name == matched_api))
+                # If we have a matched_api (from fuzzy matching), use that for comparison
+                if matched_api:
+                    is_match = element.full_name == matched_api
+                else:
+                    # For exact matches, check both name and full_name
+                    is_match = (element.name == api_name or element.full_name == api_name)
                 
                 if is_match:
                     versions_present.append(version)
                     break
-        return versions_present
+        return sorted(versions_present)
+
+    def get_apis_by_name(self, api_name: str) -> List[Dict[str, Any]]:
+        """Get all APIs that match a given name, including collision information.
+        
+        This is a helper method that provides detailed information about all APIs
+        with the same name, useful when collision is detected.
+        
+        Args:
+            api_name: The API name to search for
+            
+        Returns:
+            List of dictionaries containing API information
+        """
+        # Check for all collisions using the consolidated method
+        matches_from_changes = self._find_exact_matches(api_name)
+        collision_info = self._check_name_collisions(api_name, matches_from_changes)
+        
+        # Add version information for each API
+        result = []
+        for api_info in collision_info['unique_apis']:
+            api_info = api_info.copy()
+            api_info['versions_present'] = self._find_versions_present(api_info['full_name'], api_info['full_name'])
+            result.append(api_info)
+        
+        return sorted(result, key=lambda x: x['full_name'])
 
     def get_api_lifecycle(self, api_name: str) -> Dict[str, Any]:
-        """Get the lifecycle information for a specific API with fuzzy matching support."""
+        """Get the lifecycle information for a specific API with fuzzy matching support and collision detection."""
         lifecycle = {
             'name': api_name,
             'introduced_in': None,
             'removed_in': None,
             'modifications': [],
             'versions_present': [],
-            'matched_api': None  # Store the actual matched API name if fuzzy match was used
+            'matched_api': None,  # Store the actual matched API name if fuzzy match was used
+            'collision_detected': False,
+            'available_apis': []  # Store all colliding APIs if collision detected
         }
         
-        # First, try exact matches
+        # First, try exact matches in changes
         exact_matches = self._find_exact_matches(api_name)
+        
+        # Check for name collisions using the consolidated method
+        collision_info = self._check_name_collisions(api_name, exact_matches)
+        
+        if collision_info['has_collision']:
+            # Handle collision case
+            lifecycle['collision_detected'] = True
+            lifecycle['available_apis'] = collision_info['unique_apis']
+            
+            # Print collision information for user awareness
+            print(f"\n⚠️  Multiple APIs found with name '{api_name}':")
+            print(f"Found {collision_info['collision_count']} different APIs with the same name:")
+            for i, api_info in enumerate(collision_info['unique_apis'], 1):
+                print(f"  {i}. {api_info['full_name']} ({api_info['type']})")
+                if api_info['signature']:
+                    print(f"     Signature: {api_info['signature']}")
+            
+            print(f"\nTo get lifecycle information for a specific API, use the full name:")
+            for api_info in collision_info['unique_apis']:
+                print(f"  - get_api_lifecycle('{api_info['full_name']}')")
+            print()
+            
+            # Return early with collision information
+            return lifecycle
         
         if exact_matches:
             matched_changes = exact_matches
