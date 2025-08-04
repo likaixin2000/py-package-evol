@@ -2,7 +2,7 @@
 Example: Track specific API lifecycle
 """
 
-from pymevol import PackageAnalyzer
+from pypevol import PackageAnalyzer
 
 def track_api_lifecycle(package_name, api_name):
     """Track the lifecycle of a specific API across versions."""

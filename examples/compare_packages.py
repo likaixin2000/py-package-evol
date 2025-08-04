@@ -2,8 +2,8 @@
 Example: Comparing multiple packages
 """
 
-from pymevol import PackageAnalyzer
-from pymevol.reports import ReportGenerator
+from pypevol import PackageAnalyzer
+from pypevol.reports import ReportGenerator
 
 def main():
     packages = ['requests', 'urllib3', 'httpx']

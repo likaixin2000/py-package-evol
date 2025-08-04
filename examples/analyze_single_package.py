@@ -2,7 +2,7 @@
 Example: Analyzing a single package (requests)
 """
 
-from pymevol import PackageAnalyzer
+from pypevol import PackageAnalyzer
 
 def main():
     # Create analyzer with custom settings

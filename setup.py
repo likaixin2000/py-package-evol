@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Setup script for pymevol-plus package."""
+"""Setup script for pypevol-plus package."""
 
 from setuptools import setup, find_packages
 import os
@@ -13,14 +13,14 @@ def read_readme():
     return ''
 
 setup(
-    name='pymevol-plus',
+    name='pypevol-plus',
     version='0.1.0',
-    author='PyMevol Team',
-    author_email='pymevol@example.com',
+    author='pypevol Team',
+    author_email='pypevol@example.com',
     description='A package to analyze PyPI package API evolution and lifecycle',
     long_description=read_readme(),
     long_description_content_type='text/markdown',
-    url='https://github.com/bigcode-instruct/PyMevol',
+    url='https://github.com/bigcode-instruct/pypevol',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -58,11 +58,11 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'pymevol=pymevol.cli:main',
+            'pypevol=pypevol.cli:main',
         ],
     },
     include_package_data=True,
     package_data={
-        'pymevol': ['templates/*.html', 'templates/*.css', 'templates/*.js'],
+        'pypevol': ['templates/*.html', 'templates/*.css', 'templates/*.js'],
     },
 )

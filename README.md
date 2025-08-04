@@ -15,7 +15,7 @@ A comprehensive tool for analyzing PyPI package API evolution and lifecycle. Thi
 ## Installation
 
 ```bash
-pip install pymevol-plus
+pip install pypevol-plus
 ```
 
 For development:
@@ -29,22 +29,22 @@ pip install -e ".[dev]"
 
 ```bash
 # Analyze a single package
-pymevol analyze requests
+pypevol analyze requests
 
 # Analyze with specific version range
-pymevol analyze requests --from-version 2.20.0 --to-version 2.28.0
+pypevol analyze requests --from-version 2.20.0 --to-version 2.28.0
 
 # Generate HTML report
-pymevol analyze requests --output report.html --format html
+pypevol analyze requests --output report.html --format html
 
 # Analyze multiple packages
-pymevol analyze requests flask django --output results/
+pypevol analyze requests flask django --output results/
 ```
 
 ### Python API Usage
 
 ```python
-from pymevol import PackageAnalyzer
+from pypevol import PackageAnalyzer
 
 # Create analyzer
 analyzer = PackageAnalyzer()
@@ -61,7 +61,7 @@ report = result.generate_report(format='html')
 
 ## API Evolution Analysis
 
-PyMevol Plus tracks the following API elements:
+PyPevol tracks the following API elements:
 
 - **Functions**: Top-level and module functions
 - **Classes**: Class definitions and inheritance
@@ -79,7 +79,7 @@ PyMevol Plus tracks the following API elements:
 
 ## Configuration
 
-Create a `.pymevol.yaml` configuration file:
+Create a `.pypevol.yaml` configuration file:
 
 ```yaml
 # Package analysis settings
@@ -97,7 +97,7 @@ output:
 # Caching settings
 cache:
   enabled: true
-  directory: ~/.pymevol/cache
+  directory: ~/.pypevol/cache
   max_size: 1GB
 ```
 

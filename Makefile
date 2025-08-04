@@ -1,9 +1,9 @@
-# Makefile for PyMevol Plus
+# Makefile for PyPevol Plus
 
 .PHONY: help install install-dev test lint format clean build upload docs
 
 help:  ## Show this help message
-	@echo "PyMevol Plus - Makefile Help"
+	@echo "PyPevol Plus - Makefile Help"
 	@echo "============================"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\\033[36m%-20s\\033[0m %s\\n", $$1, $$2}'
 
@@ -15,14 +15,14 @@ install-dev:  ## Install development dependencies
 	pip install -r requirements-dev.txt
 
 test:  ## Run tests
-	pytest tests/ -v --cov=pymevol --cov-report=html --cov-report=term
+	pytest tests/ -v --cov=pypevol --cov-report=html --cov-report=term
 
 lint:  ## Run linting checks
-	flake8 pymevol tests examples
-	mypy pymevol
+	flake8 pypevol tests examples
+	mypy pypevol
 
 format:  ## Format code with black
-	black pymevol tests examples
+	black pypevol tests examples
 
 clean:  ## Clean build artifacts
 	rm -rf build/
@@ -52,7 +52,7 @@ example-track:  ## Run API tracking example
 	python examples/track_api_lifecycle.py
 
 demo:  ## Run a quick demo
-	python -m pymevol analyze requests --max-versions 5 --output demo_output.json
+	python -m pypevol analyze requests --max-versions 5 --output demo_output.json
 
 check-config:  ## Check configuration file
-	python -c "from pymevol.utils import load_config; print('Config loaded successfully:', bool(load_config()))"
+	python -c "from pypevol.utils import load_config; print('Config loaded successfully:', bool(load_config()))"
