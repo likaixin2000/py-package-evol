@@ -1,0 +1,167 @@
+Metadata-Version: 2.4
+Name: pymevol-plus
+Version: 0.1.0
+Summary: A package to analyze PyPI package API evolution and lifecycle
+Home-page: https://github.com/bigcode-instruct/PyMevol
+Author: PyMevol Team
+Author-email: pymevol@example.com
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests>=2.25.0
+Requires-Dist: beautifulsoup4>=4.9.0
+Requires-Dist: lxml>=4.6.0
+Requires-Dist: packaging>=21.0
+Requires-Dist: ast_tools>=0.1.0
+Requires-Dist: jinja2>=3.0.0
+Requires-Dist: click>=8.0.0
+Requires-Dist: plotly>=5.0.0
+Requires-Dist: pandas>=1.3.0
+Requires-Dist: colorama>=0.4.0
+Requires-Dist: tqdm>=4.60.0
+Provides-Extra: dev
+Requires-Dist: pytest>=6.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=2.12.0; extra == "dev"
+Requires-Dist: black>=21.0.0; extra == "dev"
+Requires-Dist: flake8>=3.9.0; extra == "dev"
+Requires-Dist: mypy>=0.910; extra == "dev"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# PyMevol Plus
+
+A comprehensive tool for analyzing PyPI package API evolution and lifecycle. This package fetches information from PyPI, analyzes wheels and sources, and provides detailed reports about when APIs were introduced and removed across different versions.
+
+## Features
+
+- **PyPI Integration**: Fetch package metadata and releases from PyPI
+- **Wheel Analysis**: Download and analyze wheel files to extract API information
+- **Source Code Analysis**: Parse Python source code to identify APIs
+- **Evolution Tracking**: Track API changes across package versions
+- **Visualization**: Generate interactive reports and visualizations
+- **CLI Interface**: Easy-to-use command-line interface
+- **Web Dashboard**: Interactive web interface for exploring results
+
+## Installation
+
+```bash
+pip install pymevol-plus
+```
+
+For development:
+```bash
+pip install -e ".[dev]"
+```
+
+## Quick Start
+
+### Command Line Usage
+
+```bash
+# Analyze a single package
+pymevol analyze requests
+
+# Analyze with specific version range
+pymevol analyze requests --from-version 2.20.0 --to-version 2.28.0
+
+# Generate HTML report
+pymevol analyze requests --output report.html --format html
+
+# Analyze multiple packages
+pymevol analyze requests flask django --output results/
+```
+
+### Python API Usage
+
+```python
+from pymevol import PackageAnalyzer
+
+# Create analyzer
+analyzer = PackageAnalyzer()
+
+# Analyze package evolution
+result = analyzer.analyze_package('requests')
+
+# Get API changes
+api_changes = result.get_api_changes()
+
+# Generate report
+report = result.generate_report(format='html')
+```
+
+## API Evolution Analysis
+
+PyMevol Plus tracks the following API elements:
+
+- **Functions**: Top-level and module functions
+- **Classes**: Class definitions and inheritance
+- **Methods**: Instance and class methods
+- **Properties**: Class properties and descriptors
+- **Constants**: Module-level constants
+- **Type Hints**: Type annotations and their evolution
+
+## Output Formats
+
+- **JSON**: Machine-readable format for further processing
+- **HTML**: Interactive web report with visualizations
+- **CSV**: Tabular format for spreadsheet analysis
+- **Markdown**: Human-readable documentation format
+
+## Configuration
+
+Create a `.pymevol.yaml` configuration file:
+
+```yaml
+# Package analysis settings
+analysis:
+  include_private: false
+  include_deprecated: true
+  max_versions: 50
+
+# Output settings
+output:
+  default_format: html
+  include_source_links: true
+  show_usage_examples: true
+
+# Caching settings
+cache:
+  enabled: true
+  directory: ~/.pymevol/cache
+  max_size: 1GB
+```
+
+## Examples
+
+See the `examples/` directory for detailed usage examples and tutorials.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Run the test suite: `pytest`
+6. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.

@@ -1,0 +1,2 @@
+[console_scripts]
+pymevol = pymevol.cli:main
