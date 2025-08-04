@@ -39,27 +39,41 @@ class PackageAnalyzer:
                        package_name: str,
                        from_version: Optional[str] = None,
                        to_version: Optional[str] = None,
-                       max_versions: Optional[int] = None) -> AnalysisResult:
+                       max_versions: Optional[int] = None,
+                       versions: Optional[List[str]] = None) -> AnalysisResult:
         """Analyze the API evolution of a package.
         
         Args:
             package_name: Name of the package to analyze
-            from_version: Starting version (inclusive)
-            to_version: Ending version (inclusive)
-            max_versions: Maximum number of versions to analyze
+            from_version: Starting version (inclusive). Mutually exclusive with versions.
+            to_version: Ending version (inclusive). Mutually exclusive with versions.
+            max_versions: Maximum number of versions to analyze. Mutually exclusive with versions.
+            versions: Specific list of version names to analyze. Mutually exclusive with from_version/to_version/max_versions.
             
         Returns:
             AnalysisResult containing the evolution data
+            
+        Raises:
+            ValueError: If both versions and from_version/to_version/max_versions are specified
         """
         logger.info(f"Starting analysis of package: {package_name}")
         
+        # Validate parameter combinations
+        if versions is not None and (from_version is not None or to_version is not None or max_versions is not None):
+            raise ValueError("Cannot specify 'versions' parameter together with 'from_version', 'to_version', or 'max_versions'")
+        
         try:
             # Get version information
-            versions = self.fetcher.get_version_range(
-                package_name, from_version, to_version, max_versions
-            )
+            if versions is not None:
+                # Use specific versions
+                version_infos = self.fetcher.get_specific_versions(package_name, versions)
+            else:
+                # Use version range or all versions
+                version_infos = self.fetcher.get_version_range(
+                    package_name, from_version, to_version, max_versions
+                )
             
-            if not versions:
+            if not version_infos:
                 logger.error(f"No versions found for package {package_name}")
                 return AnalysisResult(
                     package_name=package_name,
@@ -68,13 +82,13 @@ class PackageAnalyzer:
                     changes=[]
                 )
             
-            logger.info(f"Found {len(versions)} versions to analyze")
+            logger.info(f"Found {len(version_infos)} versions to analyze")
             
             # Analyze each version
             api_elements = {}
             successful_versions = []
             
-            for version_info in versions:
+            for version_info in version_infos:
                 logger.info(f"Analyzing version {version_info.version}")
                 
                 try:
@@ -94,7 +108,7 @@ class PackageAnalyzer:
                 logger.error(f"No versions could be successfully analyzed for {package_name}")
                 return AnalysisResult(
                     package_name=package_name,
-                    versions=versions,
+                    versions=version_infos,
                     api_elements={},
                     changes=[]
                 )
@@ -111,7 +125,7 @@ class PackageAnalyzer:
                 api_elements=api_elements,
                 changes=changes,
                 metadata={
-                    'total_versions_attempted': len(versions),
+                    'total_versions_attempted': len(version_infos),
                     'successful_versions': len(successful_versions),
                     'analysis_settings': {
                         'include_private': self.parser.include_private,

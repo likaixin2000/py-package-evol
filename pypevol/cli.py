@@ -33,9 +33,10 @@ def main(ctx, verbose, cache_dir):
 
 @main.command()
 @click.argument('packages', nargs=-1, required=True)
-@click.option('--from-version', help='Starting version (inclusive)')
-@click.option('--to-version', help='Ending version (inclusive)')
-@click.option('--max-versions', type=int, help='Maximum number of versions to analyze')
+@click.option('--from-version', help='Starting version (inclusive). Mutually exclusive with --versions.')
+@click.option('--to-version', help='Ending version (inclusive). Mutually exclusive with --versions.')
+@click.option('--max-versions', type=int, help='Maximum number of versions to analyze. Mutually exclusive with --versions.')
+@click.option('--versions', help='Comma-separated list of specific versions to analyze. Mutually exclusive with --from-version, --to-version, --max-versions.')
 @click.option('--output', '-o', type=click.Path(), help='Output file or directory')
 @click.option('--format', '-f', 'output_format', 
               type=click.Choice(['json', 'html', 'csv', 'markdown']), 
@@ -44,11 +45,24 @@ def main(ctx, verbose, cache_dir):
 @click.option('--include-deprecated', is_flag=True, default=True, help='Include deprecated APIs')
 @click.option('--prefer-source', is_flag=True, help='Prefer source distributions over wheels')
 @click.pass_context
-def analyze(ctx, packages, from_version, to_version, max_versions, output, 
+def analyze(ctx, packages, from_version, to_version, max_versions, versions, output, 
            output_format, include_private, include_deprecated, prefer_source):
     """Analyze one or more packages for API evolution."""
     
     cache_dir = ctx.obj.get('cache_dir')
+    
+    # Validate parameter combinations
+    if versions is not None and (from_version is not None or to_version is not None or max_versions is not None):
+        click.echo("Error: Cannot specify --versions together with --from-version, --to-version, or --max-versions", err=True)
+        return
+    
+    # Parse versions list if provided
+    versions_list = None
+    if versions:
+        versions_list = [v.strip() for v in versions.split(',') if v.strip()]
+        if not versions_list:
+            click.echo("Error: --versions parameter cannot be empty", err=True)
+            return
     
     # Create analyzer
     analyzer = PackageAnalyzer(
@@ -69,7 +83,8 @@ def analyze(ctx, packages, from_version, to_version, max_versions, output,
                     package_name=package_name,
                     from_version=from_version,
                     to_version=to_version,
-                    max_versions=max_versions
+                    max_versions=max_versions,
+                    versions=versions_list
                 )
                 
                 results[package_name] = result

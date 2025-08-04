@@ -301,6 +301,73 @@ class PyPIFetcher:
             logger.error(f"Failed to download and extract {package_name} {version}: {e}")
             return None
 
+    def get_package_versions(self, package_name: str) -> List[str]:
+        """Get a list of all version names for a package without parsing VersionInfo.
+        
+        Args:
+            package_name: Name of the package
+            
+        Returns:
+            List of version strings sorted chronologically (oldest first)
+        """
+        try:
+            metadata = self.get_package_metadata(package_name)
+            releases = metadata.get('releases', {})
+            
+            # Filter out versions without release data
+            valid_versions = []
+            for version, version_data in releases.items():
+                if version_data:  # Only include versions with actual release data
+                    valid_versions.append(version)
+            
+            # Sort versions chronologically by trying to parse release dates
+            def get_sort_key(version):
+                try:
+                    version_data = releases[version]
+                    if version_data:
+                        upload_time = (version_data[0].get('upload_time_iso_8601') or 
+                                     version_data[0].get('upload_time'))
+                        if upload_time:
+                            if 'T' in upload_time and upload_time.endswith('Z'):
+                                return datetime.fromisoformat(upload_time.replace('Z', '+00:00'))
+                            elif 'T' in upload_time:
+                                return datetime.fromisoformat(upload_time)
+                            else:
+                                from dateutil.parser import parse as parse_date
+                                return parse_date(upload_time)
+                except Exception:
+                    pass
+                return datetime.min
+            
+            valid_versions.sort(key=get_sort_key)
+            return valid_versions
+            
+        except Exception as e:
+            logger.error(f"Failed to get version list for {package_name}: {e}")
+            return []
+
+    def get_specific_versions(self, package_name: str, versions: List[str]) -> List[VersionInfo]:
+        """Get VersionInfo objects for specific version names.
+        
+        Args:
+            package_name: Name of the package
+            versions: List of version strings to get info for
+            
+        Returns:
+            List of VersionInfo objects for the specified versions
+        """
+        version_infos = []
+        for version in versions:
+            version_info = self.get_version_info(package_name, version)
+            if version_info:
+                version_infos.append(version_info)
+            else:
+                logger.warning(f"Could not get version info for {package_name} {version}")
+        
+        # Sort by release date (oldest first)
+        version_infos.sort(key=lambda v: v.release_date or datetime.min)
+        return version_infos
+
     def cleanup_temp_files(self):
         """Clean up temporary files and directories."""
         # This method can be extended to clean up temporary files
