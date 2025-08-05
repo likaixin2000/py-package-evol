@@ -1,0 +1,69 @@
+/* Custom styles for PyPevol documentation */
+
+/* Code blocks with syntax highlighting */
+.highlight .hll { background-color: #ffffcc }
+.highlight .c { color: #008000 } /* Comment */
+.highlight .k { color: #0000ff } /* Keyword */
+.highlight .s { color: #ba2121 } /* String */
+
+/* Admonitions */
+.md-typeset .admonition.tip {
+  border-color: #00bcd4;
+}
+
+.md-typeset .admonition.tip > .admonition-title {
+  background-color: rgba(0, 188, 212, 0.1);
+  border-color: #00bcd4;
+}
+
+/* Tables */
+.md-typeset table:not([class]) {
+  font-size: 0.9em;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color--light);
+  color: var(--md-primary-bg-color);
+}
+
+/* Code copy button positioning */
+.md-typeset .highlight .md-clipboard {
+  top: 0.5em;
+  right: 0.5em;
+}
+
+/* Custom feature icons */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.feature-item {
+  padding: 1rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.feature-item h3 {
+  margin-top: 0;
+  color: var(--md-primary-fg-color);
+}
+
+/* Responsive improvements */
+@media screen and (max-width: 76.1875em) {
+  .md-nav--primary .md-nav__title {
+    background-color: var(--md-primary-fg-color);
+  }
+}
+
+/* Print styles */
+@media print {
+  .md-header,
+  .md-tabs,
+  .md-footer {
+    display: none;
+  }
+}
