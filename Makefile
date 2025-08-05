@@ -1,6 +1,6 @@
 # Makefile for PyPevol
 
-.PHONY: help install install-dev test lint format clean build upload docs
+.PHONY: help install install-dev test lint format clean build upload docs docs-serve docs-build check-format check-lint ci-check
 
 help:  ## Show this help message
 	@echo "PyPevol - Makefile Help"
@@ -21,8 +21,24 @@ lint:  ## Run linting checks
 	flake8 pypevol tests examples
 	mypy pypevol
 
-format:  ## Format code with black
+format:  ## Format code with black and isort
 	black pypevol tests examples
+	isort pypevol tests examples
+
+check-format:  ## Check code formatting without making changes
+	black --check pypevol tests examples
+	isort --check-only pypevol tests examples
+
+check-lint:  ## Check linting without fixing
+	flake8 pypevol tests examples
+	mypy pypevol
+
+ci-check:  ## Run all CI checks locally
+	@echo "Running CI checks..."
+	$(MAKE) check-format
+	$(MAKE) check-lint
+	$(MAKE) test
+	$(MAKE) docs-build
 
 clean:  ## Clean build artifacts
 	rm -rf build/
@@ -30,17 +46,27 @@ clean:  ## Clean build artifacts
 	rm -rf *.egg-info/
 	rm -rf .pytest_cache/
 	rm -rf htmlcov/
+	rm -rf site/
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 
 build:  ## Build distribution packages
-	python setup.py sdist bdist_wheel
+	python -m build
 
 upload:  ## Upload to PyPI (requires twine)
 	twine upload dist/*
 
-docs:  ## Generate documentation
-	@echo "Documentation generation not implemented yet"
+docs:  ## Alias for docs-serve
+	$(MAKE) docs-serve
+
+docs-serve:  ## Serve documentation locally
+	mkdocs serve
+
+docs-build:  ## Build documentation
+	mkdocs build --strict
+
+docs-deploy:  ## Deploy documentation to GitHub Pages
+	mkdocs gh-deploy
 
 example-single:  ## Run single package analysis example
 	python examples/analyze_single_package.py

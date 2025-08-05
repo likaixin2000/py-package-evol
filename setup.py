@@ -54,6 +54,12 @@ setup(
             'black>=21.0.0',
             'flake8>=3.9.0',
             'mypy>=0.910',
+            'isort>=5.0.0',
+            'mkdocs>=1.5.0',
+            'mkdocs-material>=9.0.0',
+            'mkdocs-mermaid2-plugin>=0.6.0',
+            'build>=0.8.0',
+            'twine>=4.0.0',
         ],
     },
     entry_points={
