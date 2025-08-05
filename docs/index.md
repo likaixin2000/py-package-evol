@@ -1,6 +1,6 @@
-# PyPevol User Guide
+# PyPevol Documentation
 
-A comprehensive guide to analyzing PyPI package API evolution with PyPevol.
+Welcome to PyPevol - a comprehensive tool for analyzing PyPI package API evolution and lifecycle.
 
 ## Overview
 
