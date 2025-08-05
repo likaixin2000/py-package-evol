@@ -30,7 +30,7 @@ class PyPIFetcher:
         self.base_url = "https://pypi.org/pypi"
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'pymevol-plus/0.1.0 (package-evolution-analyzer)'
+            'User-Agent': 'pypevol-plus/0.1.0 (package-evolution-analyzer)'
         })
         
         if cache_dir:

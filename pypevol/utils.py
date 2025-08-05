@@ -1,4 +1,4 @@
-"""Utility functions for PyMevol Plus."""
+"""Utility functions for PyPevol."""
 
 import os
 import sys
@@ -14,7 +14,7 @@ def load_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
     """Load configuration from YAML file.
     
     Args:
-        config_path: Path to config file. If None, searches for .pymevol.yaml
+        config_path: Path to config file. If None, searches for .pypevol.yaml
         
     Returns:
         Configuration dictionary
@@ -22,10 +22,10 @@ def load_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
     if config_path is None:
         # Search for config file in common locations
         search_paths = [
-            Path.cwd() / '.pymevol.yaml',
-            Path.cwd() / '.pymevol.yml',
-            Path.home() / '.pymevol.yaml',
-            Path.home() / '.pymevol.yml',
+            Path.cwd() / '.pypevol.yaml',
+            Path.cwd() / '.pypevol.yml',
+            Path.home() / '.pypevol.yaml',
+            Path.home() / '.pypevol.yml',
         ]
         
         for path in search_paths:
@@ -66,7 +66,7 @@ def get_default_config() -> Dict[str, Any]:
         },
         'cache': {
             'enabled': True,
-            'directory': str(Path.home() / '.pymevol' / 'cache'),
+            'directory': str(Path.home() / '.pypevol' / 'cache'),
             'max_size': '1GB',
             'retention_days': 30,
         },

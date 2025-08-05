@@ -1,4 +1,4 @@
-# PyPevol
+# PyMevol Plus
 
 A comprehensive tool for analyzing PyPI package API evolution and lifecycle. This package fetches information from PyPI, analyzes wheels and sources, and provides detailed reports about when APIs were introduced and removed across different versions.
 
@@ -39,42 +39,18 @@ pypevol analyze requests --output report.html --format html
 
 # Analyze multiple packages
 pypevol analyze requests flask django --output results/
-
-# Analyze specific versions
-pypevol analyze requests --versions="2.32.0,2.32.1,2.32.2"
-
-# Include yanked versions in analysis
-pypevol analyze requests --include-yanked --max-versions=10
 ```
 
 ### Python API Usage
 
 ```python
-from pypevol import PackageAnalyzer, PyPIFetcher
+from pypevol import PackageAnalyzer
 
 # Create analyzer
 analyzer = PackageAnalyzer()
 
-# Option 1: Analyze all versions (limited, excludes yanked by default)
-result = analyzer.analyze_package('requests', max_versions=10)
-
-# Option 2: Analyze version range (excludes yanked by default)
-result = analyzer.analyze_package('requests', 
-                                 from_version='2.30.0', 
-                                 to_version='2.32.0')
-
-# Option 3: Analyze specific versions (NEW!)
-result = analyzer.analyze_package('requests', 
-                                 versions=['2.32.0', '2.32.1', '2.32.2'])
-
-# Option 4: Include yanked versions (NEW!)
-analyzer_with_yanked = PackageAnalyzer(include_yanked=True)
-result = analyzer_with_yanked.analyze_package('requests', max_versions=10)
-
-# Get available versions first
-fetcher = PyPIFetcher()
-available_versions = fetcher.get_package_versions('requests')
-print(f"Available versions: {available_versions[-5:]}")  # Last 5 versions
+# Analyze package evolution
+result = analyzer.analyze_package('requests')
 
 # Get API changes
 api_changes = result.get_api_changes()

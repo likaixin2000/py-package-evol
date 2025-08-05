@@ -1,4 +1,4 @@
-"""Tests for PyMevol Plus models."""
+"""Tests for PyPevol models."""
 
 import unittest
 from datetime import datetime

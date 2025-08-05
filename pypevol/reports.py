@@ -1,4 +1,4 @@
-"""Report generation for PyMevol Plus."""
+"""Report generation for PyPevol."""
 
 import json
 from typing import Dict, Any, List

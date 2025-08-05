@@ -1,4 +1,4 @@
-"""Main package analyzer for PyMevol Plus."""
+"""Main package analyzer for PyPevol."""
 
 import logging
 from pathlib import Path

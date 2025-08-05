@@ -1,4 +1,4 @@
-"""Data models for PyMevol Plus."""
+"""Data models for PyPevol."""
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Any, Union
