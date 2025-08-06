@@ -1,17 +1,14 @@
 # Examples
 
-This page provides practical examples of using PyPevol for different analysis scenarios.
+Practical examples for analyzing package API evolution with PyPevol.
 
-## Basic Package Analysis
+## Basic Analysis
 
-### Analyze Recent Versions
-
+### Simple Package Analysis
 ```python
 from pypevol import PackageAnalyzer
 
 analyzer = PackageAnalyzer()
-
-# Analyze the last 10 versions of requests
 result = analyzer.analyze_package('requests', max_versions=10)
 
 print(f"Analyzed {len(result.versions)} versions")
@@ -19,7 +16,6 @@ print(f"Found {len(result.changes)} API changes")
 ```
 
 ### Version Range Analysis
-
 ```python
 # Analyze specific version range
 result = analyzer.analyze_package(
@@ -34,10 +30,45 @@ for change in result.changes:
         print(f"{change.change_type.value.title()}: {change.element.name}")
 ```
 
-## API Evolution Tracking
+## Common Use Cases
+
+### Find Breaking Changes
+```python
+from pypevol.models import ChangeType
+
+# Get potentially breaking changes
+breaking = result.get_api_changes(
+    change_types=[ChangeType.REMOVED, ChangeType.MODIFIED]
+)
+
+for change in breaking:
+    print(f"{change.element.name} {change.change_type.value} in {change.to_version}")
+```
+
+### Track New Features
+```python
+# Find new APIs in recent versions
+new_apis = result.get_api_changes(change_types=[ChangeType.ADDED])
+recent_additions = [c for c in new_apis if c.to_version >= '2.25.0']
+
+print(f"New APIs since 2.25.0: {len(recent_additions)}")
+```
+
+### Generate Summary Report
+```python
+summary = result.generate_summary()
+print(f"""
+Package: {summary['package_name']}
+Versions: {summary['total_versions']} 
+Changes: {summary['total_changes']}
+Added: {summary['change_types']['added']}
+Removed: {summary['change_types']['removed']}
+""")
+```
+
+## API Lifecycle Tracking
 
 ### Track Function Evolution
-
 ```python
 # Find when a specific function was introduced
 lifecycle = result.get_api_lifecycle('make_response')
@@ -55,10 +86,7 @@ if lifecycle['collision_detected']:
 ```
 
 ### Monitor Deprecations
-
 ```python
-from pypevol.models import ChangeType
-
 # Find all deprecated APIs
 deprecated_changes = result.get_api_changes(
     change_types=[ChangeType.DEPRECATED]
@@ -71,8 +99,7 @@ for change in deprecated_changes:
 
 ## Advanced Analysis
 
-### Compare Two Specific Versions
-
+### Compare Specific Versions
 ```python
 # Analyze only two specific versions for comparison
 result = analyzer.analyze_package(
@@ -90,7 +117,6 @@ print(f"Potential breaking changes: {len(breaking_changes)}")
 ```
 
 ### Date-Based Analysis
-
 ```python
 from datetime import datetime
 
@@ -106,7 +132,6 @@ from collections import defaultdict
 changes_by_month = defaultdict(list)
 
 for change in result.changes:
-    # Find the version info for this change
     version_info = next(
         (v for v in result.versions if v.version == change.to_version), 
         None
@@ -119,10 +144,7 @@ for month, changes in sorted(changes_by_month.items()):
     print(f"{month}: {len(changes)} changes")
 ```
 
-## Analysis by API Type
-
-### Focus on Classes
-
+### Filter by API Type
 ```python
 from pypevol.models import APIType, ChangeType
 
@@ -135,11 +157,7 @@ new_classes = result.get_api_changes(
 print("New classes added:")
 for change in new_classes:
     print(f"  {change.element.name} in version {change.to_version}")
-```
 
-### Method Analysis
-
-```python
 # Find modified methods
 modified_methods = result.get_api_changes(
     change_types=[ChangeType.MODIFIED],
@@ -155,8 +173,7 @@ for change in modified_methods:
 
 ## Working with Results
 
-### Export Analysis Results
-
+### Export Results
 ```python
 # Save detailed analysis to JSON
 with open('requests_analysis.json', 'w') as f:
@@ -181,7 +198,6 @@ Change Types:
 ```
 
 ### Custom Analysis
-
 ```python
 # Find APIs that were added and then removed
 added_apis = {change.element.full_name for change in result.changes 
@@ -195,10 +211,9 @@ for api_name in short_lived_apis:
     print(f"  {api_name}")
 ```
 
-## Error Handling
+## Error Handling & Performance
 
 ### Robust Analysis
-
 ```python
 def analyze_package_safely(package_name, **kwargs):
     """Safely analyze a package with error handling."""
@@ -223,9 +238,7 @@ if result:
 ```
 
 ### Handle Missing APIs
-
 ```python
-# Safely get API lifecycle
 def get_api_info(result, api_name):
     lifecycle = result.get_api_lifecycle(api_name)
     
@@ -241,26 +254,7 @@ def get_api_info(result, api_name):
 print(get_api_info(result, 'Session'))
 ```
 
-## Performance Tips
-
-### Efficient Analysis
-
-```python
-# For large packages, limit versions
-result = analyzer.analyze_package(
-    'tensorflow',
-    max_versions=5,  # Only analyze recent versions
-    prefer_wheels=True  # Wheels are faster to process
-)
-
-# Use context manager for automatic cleanup
-with PackageAnalyzer() as analyzer:
-    result = analyzer.analyze_package('pandas')
-    # Cleanup happens automatically
-```
-
 ### Batch Analysis
-
 ```python
 packages = ['requests', 'flask', 'django']
 results = {}

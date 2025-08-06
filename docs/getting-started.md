@@ -1,15 +1,15 @@
 # Getting Started
 
-This guide will help you get up and running with PyPevol quickly.
+Get up and running with PyPevol quickly.
 
 ## Installation
 
-### From PyPI (Recommended)
+**From PyPI (Recommended)**
 ```bash
 pip install pypevol
 ```
 
-### Development Installation
+**Development Installation**
 ```bash
 git clone https://github.com/your-username/py-package-evol.git
 cd py-package-evol
@@ -18,17 +18,12 @@ pip install -e ".[dev]"
 
 ## Basic Usage
 
-### Python API
-
-For programmatic access and control:
-
+### First Analysis
 ```python
 from pypevol import PackageAnalyzer
 
-# Create analyzer instance
+# Create analyzer and run analysis
 analyzer = PackageAnalyzer()
-
-# Basic analysis
 result = analyzer.analyze_package('requests')
 
 # Print summary
@@ -38,23 +33,17 @@ print(f"Versions analyzed: {summary['total_versions']}")
 print(f"Total API changes: {summary['total_changes']}")
 ```
 
-## Understanding Results
+### Understanding Results
 
-### AnalysisResult Object
-
-The main result object contains:
-
+The `AnalysisResult` object contains:
 - **`package_name`**: Name of the analyzed package
 - **`versions`**: List of analyzed versions with metadata
 - **`api_elements`**: APIs found in each version
 - **`changes`**: List of all API changes between versions
 
-### API Lifecycle Tracking
-
-Find out when an API was introduced:
-
+### Track API Lifecycle
 ```python
-# Get lifecycle information for a specific API
+# Find when an API was introduced
 lifecycle = result.get_api_lifecycle('Session')
 
 print(f"Introduced in: {lifecycle['introduced_in']}")
@@ -63,10 +52,7 @@ if lifecycle['removed_in']:
     print(f"Removed in: {lifecycle['removed_in']}")
 ```
 
-### Filtering Changes
-
-Filter changes by type or API type:
-
+### Filter Changes
 ```python
 from pypevol.models import ChangeType, APIType
 
@@ -82,63 +68,65 @@ removed_apis = result.get_api_changes(
 )
 ```
 
-## Configuration Options
 
-### Analyzer Settings
-
+## Controling Your Analysis
+### API Filtering Options
 ```python
 analyzer = PackageAnalyzer(
-    include_private=False,      # Include private APIs (starting with _)
-    include_deprecated=True,    # Include deprecated APIs
-    prefer_wheels=True,         # Prefer wheel files over source
-    include_yanked=False        # Include yanked versions
+    include_private=True,  # Include private APIs (starting with _)
+    include_deprecated=True,  # Exclude deprecated APIs
+    include_yanked=False. # Include yanked versions
 )
 ```
 
-### Analysis Options
-
+### Version Selection Strategies
 ```python
-# Analyze specific versions
+# Analyze all versions (use with caution for large packages)
+result = analyzer.analyze_package('requests')
+
+# Limit number of versions (sample evenly throughout the package hisstory)
+result = analyzer.analyze_package('requests', max_versions=10)
+
+# Specific version range
 result = analyzer.analyze_package(
-    'requests', 
-    versions=['2.25.0', '2.26.0', '2.27.0']
+    'requests',
+    from_version='2.20.0',
+    to_version='2.28.0'
 )
 
 # Date-based filtering
-from datetime import datetime
+from datetime import datetime, timezone
 result = analyzer.analyze_package(
     'requests',
-    from_date=datetime(2021, 1, 1),
-    to_date=datetime(2022, 1, 1)
+    from_date=datetime(2022, 1, 1, tzinfo=timezone.utc),
+    to_date=datetime(2023, 1, 1, tzinfo=timezone.utc)
+)
+
+# Specific versions only
+result = analyzer.analyze_package(
+    'requests',
+    versions=['2.25.0', '2.26.0', '2.27.0']
 )
 ```
 
-## Output Formats
 
-### JSON Export
-
+### Result Filtering
 ```python
-# Export to JSON string
-json_data = result.to_json(indent=2)
+from pypevol.models import ChangeType, APIType
 
-# Save to file
-with open('analysis.json', 'w') as f:
-    f.write(json_data)
+# Filter by change type
+breaking_changes = result.get_api_changes(
+    change_types=[ChangeType.REMOVED, ChangeType.MODIFIED]
+)
+
+# Filter by API type
+function_changes = result.get_api_changes(
+    api_types=[APIType.FUNCTION]
+)
+
+# Combined filtering
+new_classes = result.get_api_changes(
+    change_types=[ChangeType.ADDED],
+    api_types=[APIType.CLASS]
+)
 ```
-
-### Dictionary Format
-
-```python
-# Convert to dictionary for custom processing
-data = result.to_dict()
-
-# Access specific data
-for version_data in data['versions']:
-    print(f"Version {version_data['version']}: {len(version_data)} APIs")
-```
-
-## Next Steps
-
-- Explore [Examples](examples.md) for common analysis patterns
-- Check the [API Reference](api-reference.md) for detailed method documentation
-- Learn about [Configuration](configuration.md) options for advanced usage
