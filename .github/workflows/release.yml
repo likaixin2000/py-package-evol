@@ -103,10 +103,12 @@ jobs:
           git log --pretty=format:"- %s (%h)" >> CHANGELOG.md
         fi
         
-        # Set output for use in release
-        echo "changelog<<EOF" >> $GITHUB_OUTPUT
-        cat CHANGELOG.md >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        # Set output for use in release using proper delimiter
+        {
+          echo 'changelog<<CHANGELOG_DELIMITER'
+          cat CHANGELOG.md
+          echo 'CHANGELOG_DELIMITER'
+        } >> $GITHUB_OUTPUT
 
     - name: Download build artifacts
       uses: actions/download-artifact@v4
