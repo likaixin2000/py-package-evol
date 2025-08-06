@@ -16,13 +16,14 @@ def read_readme():
 
 setup(
     name="pypevol",
-    version="0.1.0",
+    use_scm_version=True,
+    setup_requires=["setuptools_scm"],
     author="pypevol Team",
-    author_email="pypevol@example.com",
+    author_email="likaixin@u.nus.edu",
     description="A package to analyze PyPI package API evolution and lifecycle",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/bigcode-instruct/pypevol",
+    url="https://github.com/likaixin2000/py-package-evol",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
