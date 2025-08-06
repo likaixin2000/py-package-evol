@@ -18,27 +18,9 @@ pip install -e ".[dev]"
 
 ## Basic Usage
 
-### Command Line Interface
-
-The simplest way to analyze a package:
-
-```bash
-# Analyze the requests package
-pypevol analyze requests
-
-# Analyze specific version range
-pypevol analyze requests --from-version 2.20.0 --to-version 2.28.0
-
-# Limit number of versions
-pypevol analyze requests --max-versions 5
-
-# Generate HTML report
-pypevol analyze requests --output report.html --format html
-```
-
 ### Python API
 
-For programmatic access and more control:
+For programmatic access and control:
 
 ```python
 from pypevol import PackageAnalyzer

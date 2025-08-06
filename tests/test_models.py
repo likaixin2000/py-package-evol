@@ -74,7 +74,7 @@ class TestVersionInfo(unittest.TestCase):
             version="1.2.3",
             release_date=release_date,
             python_requires=">=3.8",
-            dependencies=["requests>=2.0", "click>=8.0"],
+            dependencies=["requests>=2.0", "pandas>=1.0"],
         )
 
         self.assertEqual(version.version, "1.2.3")

@@ -77,8 +77,5 @@ example-compare:  ## Run package comparison example
 example-track:  ## Run API tracking example
 	python examples/track_api_lifecycle.py
 
-demo:  ## Run a quick demo
-	python -m pypevol analyze requests --max-versions 5 --output demo_output.json
-
 check-config:  ## Check configuration file
 	python -c "from pypevol.utils import load_config; print('Config loaded successfully:', bool(load_config()))"

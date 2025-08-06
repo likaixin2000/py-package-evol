@@ -9,7 +9,6 @@ A comprehensive tool for analyzing PyPI package API evolution and lifecycle. Thi
 - **Source Code Analysis**: Parse Python source code to identify APIs
 - **Evolution Tracking**: Track API changes across package versions
 - **Visualization**: Generate interactive reports and visualizations
-- **CLI Interface**: Easy-to-use command-line interface
 - **Web Dashboard**: Interactive web interface for exploring results
 
 ## Installation
@@ -24,22 +23,6 @@ pip install -e ".[dev]"
 ```
 
 ## Quick Start
-
-### Command Line Usage
-
-```bash
-# Analyze a single package
-pypevol analyze requests
-
-# Analyze with specific version range
-pypevol analyze requests --from-version 2.20.0 --to-version 2.28.0
-
-# Generate HTML report
-pypevol analyze requests --output report.html --format html
-
-# Analyze multiple packages
-pypevol analyze requests flask django --output results/
-```
 
 ### Python API Usage
 

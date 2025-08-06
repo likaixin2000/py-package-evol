@@ -218,8 +218,7 @@ py-package-evol/
 │   ├── analyzer.py    # Main analyzer class
 │   ├── models.py      # Data models
 │   ├── fetcher.py     # PyPI data fetching
-│   ├── parser.py      # Source code parsing
-│   └── cli.py         # Command line interface
+│   └── parser.py      # Source code parsing
 ├── tests/             # Test files
 ├── docs/              # Documentation
 ├── examples/          # Usage examples

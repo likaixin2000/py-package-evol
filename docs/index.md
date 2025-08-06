@@ -8,14 +8,6 @@ PyPevol helps you understand how Python packages evolve over time by tracking AP
 
 ## 🚀 Quick Start
 
-```bash
-# Install PyPevol
-pip install pypevol
-
-# Analyze a package
-pypevol analyze requests --max-versions 5
-```
-
 ```python
 # Python API
 from pypevol import PackageAnalyzer
@@ -35,7 +27,6 @@ Learn how to install and use PyPevol with basic examples.
 
 **Topics covered:**
 - Installation options
-- Command line usage  
 - Basic Python API
 - Understanding results
 - Configuration basics

@@ -44,7 +44,6 @@ setup(
         "packaging>=21.0",
         "ast_tools>=0.1.0",
         "jinja2>=3.0.0",
-        "click>=8.0.0",
         "plotly>=5.0.0",
         "pandas>=1.3.0",
         "colorama>=0.4.0",
@@ -63,11 +62,6 @@ setup(
             "mkdocs-mermaid2-plugin>=0.6.0",
             "build>=0.8.0",
             "twine>=4.0.0",
-        ],
-    },
-    entry_points={
-        "console_scripts": [
-            "pypevol=pypevol.cli:main",
         ],
     },
     include_package_data=True,
