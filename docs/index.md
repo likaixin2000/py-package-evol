@@ -4,21 +4,25 @@ PyPevol analyzes PyPI package API evolution and tracks changes across versions.
 
 ## Core Functions
 
+PyPevol can:
+
 - Analyze API evolution across versions
 - Track when APIs were introduced/removed
 - Create analysis summaries
 
 **API Elements Tracked**
+
 - Functions and methods
 - Classes and inheritance
 - Properties and constants
 - Type hints and decorators
 
 **Change Detection** - Identify API modifications
-- **Added**
-- **Removed**
-- **Modified**: Signature changes
-- **Deprecated**: APIs marked for future removal
+
+- Added
+- Removed
+- Modified: Signature changes
+- Deprecated: APIs marked for future removal
 
 
 ## 🚀 Quick Start

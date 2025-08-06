@@ -18,6 +18,7 @@ PackageAnalyzer(
 ```
 
 **Parameters:**
+
 - `cache_dir` - Directory to cache downloaded files
 - `include_private` - Include private APIs (starting with `_`)
 - `include_deprecated` - Include deprecated APIs  
@@ -42,6 +43,7 @@ analyze_package(
 ```
 
 **Parameters:**
+
 - `package_name` - Name of the package to analyze
 - `from_version` - Starting version (inclusive)
 - `to_version` - Ending version (inclusive)  
@@ -67,6 +69,7 @@ get_package_versions(
 Contains the results of package API evolution analysis.
 
 ### Properties
+
 - `package_name` - Name of the analyzed package
 - `versions` - List of `VersionInfo` objects
 - `api_elements` - Dictionary mapping version to list of `APIElement`
@@ -94,6 +97,7 @@ get_api_lifecycle(api_name: str) -> Dict[str, Any]
 ```
 
 **Returns dictionary with:**
+
 - `name` - API name searched for
 - `introduced_in` - Version where API was first introduced
 - `removed_in` - Version where API was removed (if applicable)
@@ -124,6 +128,7 @@ to_json(indent: int = 2) -> str
 Represents an API element (function, class, method, etc.).
 
 **Properties:**
+
 - `name` - Name of the API element
 - `type` - `APIType` enum value
 - `module_path` - Full module path
@@ -137,6 +142,7 @@ Represents an API element (function, class, method, etc.).
 - `metadata` - Additional metadata
 
 **Methods:**
+
 - `full_name` - Get the fully qualified name (property)
 - `get_signature()` - Get a unique signature for comparison
 
@@ -145,6 +151,7 @@ Represents an API element (function, class, method, etc.).
 Information about a specific package version.
 
 **Properties:**
+
 - `version` - Version string
 - `release_date` - Release date as datetime
 - `python_requires` - Python version requirement
@@ -160,6 +167,7 @@ Information about a specific package version.
 Represents a change to an API element between versions.
 
 **Properties:**
+
 - `element` - The `APIElement` that changed
 - `change_type` - `ChangeType` enum value
 - `from_version` - Previous version

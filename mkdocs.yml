@@ -103,11 +103,12 @@ markdown_extensions:
 
 # Page tree
 nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Examples: examples.md
-  - API Reference: api-reference.md
-  - Configuration: configuration.md
+  - Home:
+    - Welcome: index.md
+    - Getting Started: getting-started.md
+    - Examples: examples.md
+    - API Reference: api-reference.md
+    - Configuration: configuration.md
 
 # Extra
 extra:
