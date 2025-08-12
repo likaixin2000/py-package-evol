@@ -100,3 +100,28 @@ See the `examples/` directory for detailed usage examples and tutorials.
 ## License
 
 MIT License - see LICENSE file for details.
+
+## Acknowledgments
+
+This project was inspired by [billquan/PyMevol](https://github.com/billquan/PyMevol).
+
+If you use this work, please also cite the original paper:
+
+```bibtex
+@inproceedings{quan2022characterizing,
+  title={Characterizing Python Method Evolution with PyMevol: An Essential Step Towards Enabling Reliable Software Systems},
+  author={Quan, Haowei and Wang, Jiawei and Li, Bo and Du, Xiaoning and Liu, Kui and Li, Li},
+  booktitle={2022 IEEE International Symposium on Software Reliability Engineering Workshops (ISSREW)},
+  pages={81--86},
+  year={2022},
+  organization={IEEE}
+}
+
+@misc{pypevol,
+  title        = {{PyPevol}: Python Package Evolution Analysis Tool},
+  author       = {Kaixin Li},
+  howpublished = {\url{https://github.com/likaixin2000/py-package-evol}},
+  year         = {2025}
+}
+```
+
